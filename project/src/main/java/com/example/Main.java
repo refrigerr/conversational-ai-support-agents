@@ -1,10 +1,17 @@
 package com.example;
 
+import java.util.List;
+
 public class Main 
 {
-    public static void main( String[] args ) throws Exception
+    public static void main( String[] args )
     {
         OpenAiService openAiService = new OpenAiService();
-        System.out.println(openAiService.chat("say hello to me, my name is jan"));
+        ConversationHistory conversationHistory = new ConversationHistory();
+        ExampleAgent exampleAgent = new ExampleAgent(openAiService, conversationHistory);
+        
+        System.out.println(exampleAgent.chat("Hi my name is Jan"));
+        System.out.println(exampleAgent.chat("What is my name"));
+        
     }
 }
