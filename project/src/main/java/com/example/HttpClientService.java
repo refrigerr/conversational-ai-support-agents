@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 
 public class HttpClientService {
 
@@ -13,13 +14,15 @@ public class HttpClientService {
         this.client = HttpClient.newBuilder().build();
     }
 
-    public String get(String url) throws Exception {
+    public String get(String url, Map<String, String> headers) throws Exception {
         try {
-            HttpRequest request = HttpRequest.newBuilder()
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                     .uri(URI.create(url))
-                    .header("Content-Type", "application/json")
-                    .GET()
-                    .build();
+                    .GET();
+
+            headers.forEach(requestBuilder::header);
+
+            HttpRequest request = requestBuilder.build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -31,14 +34,16 @@ public class HttpClientService {
         }
     }
 
-    public String post(String url, String jsonBody) throws Exception {
+    public String post(String url, String jsonBody, Map<String, String> headers) throws Exception {
         try {
-            HttpRequest request = HttpRequest.newBuilder()
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                     .uri(URI.create(url))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .build();
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody));
+                
+            headers.forEach(requestBuilder::header);
 
+            HttpRequest request = requestBuilder.build();
+            
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             return response.body();
 
