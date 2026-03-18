@@ -21,8 +21,8 @@ public class Main
         ToolExecutor toolExecutor = new ToolExecutor(customerData);
         ConversationHistory conversationHistory = new ConversationHistory();
         DocLoader docLoader = new DocLoader();
-        //DocRetriever docRetriever = new DocRetriever(docLoader.getChunks(), openAiService);
-        DocRetriever docRetriever = new DocRetriever(docLoader.getRawDocuments(), openAiService);
+        DocRetriever docRetriever = new DocRetriever(docLoader.getChunks(), openAiService);
+        //DocRetriever docRetriever = new DocRetriever(docLoader.getRawDocuments(), openAiService);
 
         Agent orchestrator = new OrchestratorAgent(openAiService, conversationHistory);
         Agent billingAgent = new BillingAgent(openAiService, conversationHistory, toolExecutor);
@@ -42,13 +42,23 @@ public class Main
             }
 
             String route = orchestrator.chat(input);
-            System.out.println("\n[Routing to: " + route + "]\n");
+            //System.out.println("\n[Routing to: " + route + "]\n");
+            String agentLabel = switch (route) {
+                case "TECHNICAL" -> "Technical";
+                case "BILLING"   -> "Billing";
+                default          -> null;
+            };
 
             String response = switch (route) {
                 case "TECHNICAL" -> technicalAgent.chat(input);
                 case "BILLING"   -> billingAgent.chat(input);
                 default          -> "I'm sorry, I cannot assist with that. Please contact our general support team.";
             };
+
+            System.out.print("\n");
+            if (agentLabel != null) {
+                System.out.print(agentLabel + " ");
+            }
 
             System.out.println("Agent: " + response);
         }

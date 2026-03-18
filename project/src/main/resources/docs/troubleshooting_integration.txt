@@ -1,0 +1,24 @@
+TROUBLESHOOTING INTEGRATION ISSUES
+
+This document covers common problems that occur when integrating with our platform and how to resolve them.
+
+AUTHENTICATION FAILURES
+The most common integration issue is authentication failure. If you receive a 401 Unauthorized response, first verify that your API key is correctly included in the request header as: Authorization: Bearer YOUR_API_KEY. API keys are case sensitive and must not contain any extra spaces or newline characters. If your API key was recently regenerated, make sure you have updated it in all places where it is used. API keys expire after 12 months. You can check the expiry date of your key in the Developer Portal under API Keys. If your key has expired, generate a new one and replace the old key in your integration.
+
+WEBHOOK DELIVERY FAILURES
+If your webhook endpoint is not receiving events, check the following. First, ensure your endpoint is publicly accessible and returns a 200 status code within 5 seconds of receiving a request. If your endpoint takes longer than 5 seconds to respond, our system will consider the delivery failed and will retry. We retry failed webhook deliveries up to 5 times with exponential backoff: 1 minute, 5 minutes, 30 minutes, 2 hours, and 24 hours. If all retries fail, the event is marked as permanently failed and no further delivery attempts are made. You can manually replay failed webhook events from the Developer Portal under Webhooks > Failed Events.
+
+SSL AND CERTIFICATE ERRORS
+All integration endpoints must use HTTPS. HTTP connections are rejected. If you receive SSL handshake errors, verify that your server certificate is valid and not expired. Self-signed certificates are not accepted. Ensure that your certificate chain is complete and includes all intermediate certificates. If you are using mutual TLS (mTLS), make sure you have uploaded your client certificate in the Developer Portal under Security > Client Certificates.
+
+RATE LIMIT ERRORS
+If you receive a 429 Too Many Requests response, you have exceeded the rate limit. The default rate limit is 100 requests per minute per API key. The response headers include X-RateLimit-Limit (your limit), X-RateLimit-Remaining (requests remaining in the current window), and X-RateLimit-Reset (Unix timestamp when the limit resets). Implement exponential backoff in your integration when you receive a 429 response. If you consistently need more than 100 requests per minute, contact support to request a rate limit increase.
+
+DATA FORMAT ERRORS
+If you receive a 400 Bad Request response, the request body is likely malformed. All requests must use JSON format with Content-Type: application/json header. Dates must be in ISO 8601 format (example: 2024-03-15T10:30:00Z). Numeric IDs must be sent as strings, not integers. Boolean values must be true or false in lowercase. If you are unsure about the expected format, refer to the API Usage Guide or use the API Explorer in the Developer Portal to test requests interactively.
+
+CONNECTION TIMEOUTS
+If your integration is experiencing connection timeouts, check that your firewall or network security group allows outbound HTTPS traffic to api.example.com on port 443. Our API servers have static IP addresses that can be whitelisted: 203.0.113.10, 203.0.113.11, and 203.0.113.12. Set your HTTP client timeout to at least 30 seconds as some operations such as report generation may take up to 20 seconds to complete.
+
+TESTING YOUR INTEGRATION
+Use the sandbox environment to test your integration without affecting production data. The sandbox base URL is https://sandbox.api.example.com/v1. Sandbox API keys are separate from production keys and can be generated in the Developer Portal under Environments > Sandbox. All features available in production are also available in the sandbox. Sandbox data is reset every 24 hours at midnight UTC.

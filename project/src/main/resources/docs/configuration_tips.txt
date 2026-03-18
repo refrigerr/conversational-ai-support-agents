@@ -1,0 +1,24 @@
+CONFIGURATION TIPS AND BEST PRACTICES
+
+This document provides guidance on configuring the platform correctly for optimal performance, security, and reliability.
+
+ENVIRONMENT CONFIGURATION
+The platform supports three environments: development, staging, and production. Always use separate API keys for each environment. Never use a production API key in a development or testing context as mistakes in testing can affect real data. Environment-specific settings are managed in the Developer Portal under Settings > Environments. Each environment can have its own webhook endpoints, notification preferences, and rate limit settings.
+
+SETTING UP ENVIRONMENT VARIABLES
+Store all sensitive configuration values such as API keys, database credentials, and secret tokens as environment variables. Never hardcode these values directly in your source code or commit them to version control. The following environment variables are required for a standard integration: API_KEY (your platform API key), API_BASE_URL (set to https://api.example.com/v1 for production), WEBHOOK_SECRET (used to verify incoming webhook signatures), and LOG_LEVEL (set to info for production, debug for development).
+
+CONFIGURING RETRY LOGIC
+Network failures and temporary server errors are inevitable. Your integration should implement retry logic for all API calls. Retry only on transient errors: 429 Too Many Requests, 500 Internal Server Error, 502 Bad Gateway, 503 Service Unavailable, and 504 Gateway Timeout. Do not retry on client errors such as 400 Bad Request or 401 Unauthorized as these indicate a problem with your request that will not resolve itself. Use exponential backoff with jitter when retrying: start with a 1 second delay, double the delay on each retry, and add a small random delay to avoid thundering herd problems. Set a maximum of 3 retry attempts.
+
+WEBHOOK SECURITY CONFIGURATION
+To verify that incoming webhook events are genuinely from our platform, validate the webhook signature on every request. Each webhook request includes an X-Webhook-Signature header containing an HMAC-SHA256 hash of the request body signed with your Webhook Secret. To verify the signature, compute HMAC-SHA256 of the raw request body using your Webhook Secret as the key and compare it to the value in the X-Webhook-Signature header. Reject any request where the signatures do not match. Your Webhook Secret can be found and regenerated in the Developer Portal under Webhooks > Security.
+
+CONFIGURING TIMEOUTS
+Set appropriate timeouts in your HTTP client to avoid hanging connections. The recommended values are: connection timeout 5 seconds (time to establish a TCP connection), read timeout 30 seconds (time to wait for a response after the connection is established), and total request timeout 35 seconds. If a request times out, treat it the same as a 503 error and apply your retry logic. Note that for long-running operations such as bulk exports, you should use the async API endpoints which return immediately with a job ID that you can poll for completion.
+
+LOGGING BEST PRACTICES
+Log all API requests and responses in your integration for debugging purposes. At minimum, log the HTTP method, URL, response status code, and response time for every request. In production, set LOG_LEVEL to info. In development and staging, set LOG_LEVEL to debug to include full request and response bodies. Never log API keys, passwords, or other sensitive values. Rotate your log files daily and retain logs for at least 30 days. If you are investigating a specific issue, you can correlate your logs with our platform logs using the X-Request-ID header that is included in every API response.
+
+PERFORMANCE CONFIGURATION
+To get the best performance from the API, follow these tips. Use connection pooling in your HTTP client to reuse TCP connections across multiple requests rather than opening a new connection for each request. Enable HTTP/2 if your HTTP client supports it as it allows multiple requests to be multiplexed over a single connection. For operations that retrieve large lists of resources, use pagination with a page size of 50 to 100 items. For bulk operations, use the batch endpoints where available instead of making individual requests for each item.

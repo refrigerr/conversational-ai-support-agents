@@ -12,10 +12,9 @@ public class DocLoader {
 
     public DocLoader() {
 
-        loadDoc("docs/api_usage.md");
-        loadDoc("docs/integration.md");
-        loadDoc("docs/setup.md");
-        loadDoc("docs/troubleshooting.md");
+        loadDoc("docs/api_usage_guidance.txt");
+        loadDoc("docs/configuration_tips.txt");
+        loadDoc("docs/troubleshooting_integration.txt");
 
     }
 
@@ -31,7 +30,7 @@ public class DocLoader {
             String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             rawDocuments.add(content);
             chunks.addAll(chunk(content));
-            System.out.println("Loaded: " + path);
+            //System.out.println("Loaded: " + path);
 
         } catch (Exception e) {
             System.err.println("Failed to load: " + path + " - " + e.getMessage());
@@ -39,14 +38,12 @@ public class DocLoader {
     }
 
     private List<String> chunk(String content) {
-
         List<String> chunks = new ArrayList<>();
-
-        String[] sections = content.split("(?m)^(?=##)");
-
+        
+        String[] sections = content.split("\\n\\n+");
         for (String section : sections) {
             String trimmed = section.trim();
-            if (!trimmed.isEmpty()) {
+            if (trimmed.length() > 100) { // skip very short sections like titles
                 chunks.add(trimmed);
             }
         }

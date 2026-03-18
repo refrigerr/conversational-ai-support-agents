@@ -1,0 +1,30 @@
+API USAGE GUIDANCE
+
+This document describes how to use the platform API effectively, including authentication, available endpoints, request and response formats, and advanced features.
+
+GETTING STARTED
+The base URL for all API requests is https://api.example.com/v1. All requests must be made over HTTPS. To authenticate, include your API key in the Authorization header of every request: Authorization: Bearer YOUR_API_KEY. You can generate an API key in the Developer Portal under API Keys > Generate New Key. Keep your API key secret. If you believe your key has been compromised, revoke it immediately from the Developer Portal and generate a new one.
+
+MAKING YOUR FIRST REQUEST
+To verify that your API key is working correctly, make a GET request to the health endpoint: GET https://api.example.com/v1/health. A successful response returns HTTP 200 with the body: {"status": "ok", "version": "1.4.2"}. If you receive a 401 response, your API key is invalid or missing. If you receive a 503 response, the API is temporarily unavailable.
+
+RESOURCES AND ENDPOINTS
+The API is organized around the following main resources. Customers: manage customer records, GET /customers to list all customers, GET /customers/{id} to retrieve a specific customer, POST /customers to create a new customer, PUT /customers/{id} to update a customer, DELETE /customers/{id} to delete a customer. Projects: manage projects, GET /projects, GET /projects/{id}, POST /projects, PUT /projects/{id}, DELETE /projects/{id}. Reports: generate and retrieve reports, POST /reports to create a report, GET /reports/{id} to check status and retrieve results. Events: retrieve audit events, GET /events with optional filters for date range and event type.
+
+REQUEST FORMAT
+All request bodies must be JSON. Set the Content-Type header to application/json on all POST and PUT requests. String fields must be enclosed in double quotes. Date fields must use ISO 8601 format with UTC timezone, for example 2024-06-01T00:00:00Z. Numeric ID fields must be passed as strings. For example, to create a new customer: POST /customers with body {"name": "Acme Corp", "email": "contact@acme.com", "plan": "pro"}.
+
+RESPONSE FORMAT
+All responses are returned as JSON. Successful responses return HTTP 200 for GET and PUT requests, HTTP 201 for POST requests that create a new resource, and HTTP 204 for DELETE requests with no response body. Every successful response for a single resource includes an id field, a created_at field, and an updated_at field in addition to the resource-specific fields. List responses are paginated and include a data array containing the items, a total field with the total count of items, a page field with the current page number, and a limit field with the page size.
+
+PAGINATION
+List endpoints return paginated results. By default, 20 items are returned per page. To request a specific page, add the page query parameter: GET /customers?page=2. To change the page size, add the limit query parameter up to a maximum of 100: GET /customers?page=1&limit=50. To retrieve all customers across all pages, continue making requests incrementing the page number until the data array in the response is empty.
+
+FILTERING AND SORTING
+List endpoints support filtering and sorting via query parameters. To filter customers by plan, use: GET /customers?plan=pro. To filter by creation date range, use: GET /customers?created_after=2024-01-01T00:00:00Z&created_before=2024-06-01T00:00:00Z. To sort results, use the sort_by and sort_order parameters: GET /customers?sort_by=created_at&sort_order=desc. Multiple filters can be combined in a single request.
+
+ASYNCHRONOUS OPERATIONS
+Some operations such as generating large reports or performing bulk updates take longer than a standard API request. These operations are handled asynchronously. When you initiate an async operation, the API immediately returns HTTP 202 Accepted with a job object containing an id and a status field set to pending. Poll GET /jobs/{id} to check the status. The status will be pending while the job is queued, processing while it is running, completed when it is finished, or failed if it encountered an error. When status is completed, the response includes a result field with the output data or a download URL.
+
+ERROR HANDLING
+All errors return a JSON body with a code field containing a machine-readable error code and a message field containing a human-readable description. For example: {"code": "resource_not_found", "message": "Customer with ID 456 was not found"}. Common error codes are: invalid_request (malformed request body), authentication_failed (invalid or missing API key), resource_not_found (the requested resource does not exist), rate_limit_exceeded (too many requests), and internal_error (unexpected server error, safe to retry).
