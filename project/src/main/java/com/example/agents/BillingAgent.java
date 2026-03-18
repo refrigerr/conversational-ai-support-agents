@@ -62,7 +62,7 @@ public class BillingAgent extends Agent{
                     String toolCallId = toolCall.getString("id");
 
                     String toolResult = toolExecutor.execute(toolName, arguments);
-                    System.out.println("[Tool called: " + toolName + " → " + toolResult + "]");
+                    //System.out.println("[Tool called: " + toolName + " → " + toolResult + "]");
 
                     messages.add(new Message("tool", toolResult, toolCallId));
                 }

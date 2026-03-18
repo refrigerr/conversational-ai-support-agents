@@ -1,8 +1,14 @@
 package com.example;
 
+import java.util.Scanner;
+
 import com.example.CustomerData.BillingRecord;
 import com.example.agents.Agent;
 import com.example.agents.BillingAgent;
+import com.example.agents.OrchestratorAgent;
+import com.example.agents.TechnicalAgent;
+import com.example.documentsManager.DocLoader;
+import com.example.documentsManager.DocRetriever;
 import com.example.tools.ToolExecutor;
 
 public class Main 
@@ -14,11 +20,42 @@ public class Main
         CustomerData customerData = new CustomerData();
         ToolExecutor toolExecutor = new ToolExecutor(customerData);
         ConversationHistory conversationHistory = new ConversationHistory();
-        Agent agent = new BillingAgent(openAiService, conversationHistory, toolExecutor);
-        // System.out.println(agent.chat("What is the billing history for customer_001?"));
-        // System.out.println(agent.chat("Add a new billing for customer_001: date: 26.04.2004, amount: 25.99, for: new tv"));
-        // System.out.println(agent.chat("What is the billing history for customer_001?"));
-        System.out.println(agent.chat("What is the refund policy?"));
+        DocLoader docLoader = new DocLoader();
+        DocRetriever docRetriever = new DocRetriever(docLoader.getChunks());
+
+        Agent orchestrator = new OrchestratorAgent(openAiService, conversationHistory);
+        Agent billingAgent = new BillingAgent(openAiService, conversationHistory, toolExecutor);
+        Agent technicalAgent = new TechnicalAgent(openAiService, conversationHistory, docRetriever);
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Welcome, type 'exit' to quit app.");
+
+        while (true) {
+            System.out.print("\nYou: ");
+            String input = scanner.nextLine();
+
+            if (input.equalsIgnoreCase("exit")) {
+                System.out.println("Goodbye!");
+                break;
+            }
+
+            String route = orchestrator.chat(input);
+            System.out.println("\n[Routing to: " + route + "]\n");
+
+            String response = switch (route) {
+                case "TECHNICAL" -> technicalAgent.chat(input);
+                case "BILLING"   -> billingAgent.chat(input);
+                default          -> "I'm sorry, I cannot assist with that. Please contact our general support team.";
+            };
+
+            System.out.println("Agent: " + response);
+        }
+
+
+
+        
+        
         
     }
 }
