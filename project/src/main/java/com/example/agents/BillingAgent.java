@@ -60,8 +60,7 @@ public class BillingAgent extends Agent{
             // second call — send tool result back to get final response
             messages.add(new Message("assistant", message.getJSONArray("tool_calls")));
             messages.add(new Message("tool", toolResult, toolCallId));
-            // temporary debug — add before the second openAiService.chat() call in BillingAgent
-            System.out.println("MESSAGES FOR SECOND CALL: " + messages.toString());    
+               
             String finalResponse = openAiService.chat(messages);
             history.addAssistant(finalResponse);
             return finalResponse;
