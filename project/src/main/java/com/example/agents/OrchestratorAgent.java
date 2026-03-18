@@ -19,9 +19,7 @@ public class OrchestratorAgent extends Agent{
 
     @Override
     public String chat(String userMessage){
-        history.addUser(userMessage);
         String response = openAiService.chat(buildMessages());
-        //history.addAssistant(response);
         return response;
     }
     

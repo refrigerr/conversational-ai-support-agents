@@ -1,4 +1,4 @@
-package com.example;
+package com.example.documentsManager;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
