@@ -1,27 +1,17 @@
 package com.example;
 
-import java.util.List;
-
-import com.example.agents.Agent;
-import com.example.agents.TechnicalAgent;
-import com.example.documentsManager.DocLoader;
-import com.example.documentsManager.DocRetriever;
+import com.example.CustomerData.BillingRecord;
 
 public class Main 
 {
     public static void main( String[] args )
     {
         
-        ConversationHistory conversationHistory = new ConversationHistory();
-        OpenAiService openAiService = new OpenAiService();
-        DocLoader docLoader = new DocLoader();
-        List<String> chunks = docLoader.getChunks();
-        DocRetriever docRetriever = new DocRetriever(chunks);
+        CustomerData customerData = new CustomerData();
 
-        
-        Agent technicalAgent = new TechnicalAgent(openAiService, conversationHistory, docRetriever);
-        String resposne = technicalAgent.chat("What is today weather");
-        System.out.println(resposne);
-        
+        System.out.println(customerData.getBillingHistory("customer_001"));
+        customerData.addBillingRecord("customer_001", new BillingRecord("2026-06-06", "Test Plan", 100.21));
+        System.out.println(customerData.getBillingHistory("customer_001"));
+
     }
 }
