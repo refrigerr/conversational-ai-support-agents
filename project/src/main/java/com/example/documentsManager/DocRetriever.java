@@ -2,39 +2,43 @@ package com.example.documentsManager;
 
 import java.util.List;
 
+import com.example.OpenAiService;
+
 public class DocRetriever {
 
-    private final List<String> chunks;
+    private final VectorStore vectorStore;
+    private final OpenAiService openAiService;
 
-    public DocRetriever(List<String> chunks) {
-        this.chunks = chunks;
+    public DocRetriever(List<String> chunks, OpenAiService openAiService) {
+        this.vectorStore = new VectorStore();
+        this.openAiService = openAiService;
+        embedChunks(chunks);
+    }
+
+    private void embedChunks(List<String> chunks) {
+        System.out.println("Embedding " + chunks.size() + " chunks...");
+        for (String chunk : chunks) {
+            List<Double> vector = openAiService.embed(chunk);
+            vectorStore.add(chunk, vector);
+        }
+        System.out.println("Embedding complete.");
     }
 
     public String retrieveRelevant(String userMessage) {
-        String[] queryWords = userMessage.toLowerCase().split("\\s+");
+        List<Double> queryVector = openAiService.embed(userMessage);
+        List<String> relevant = vectorStore.findRelevant(queryVector, 1); //normally topK should be higher, but since I embed whole documents topK=1 is the best solution
 
-        List<String> top = chunks.stream()
-                .filter(chunk -> score(chunk.toLowerCase(), queryWords) > 0)
-                .sorted((a, b) -> Integer.compare(
-                        score(b.toLowerCase(), queryWords),
-                        score(a.toLowerCase(), queryWords)))
-                .limit(3)
-                .toList();
-
-        if (top.isEmpty()) {
+        if (relevant.isEmpty()) {
+            System.out.println("[DocRetriever] No relevant chunks found for: \"" + userMessage + "\"");
             return "No relevant documentation found.";
         }
-
-        return String.join("\n\n---\n\n", top);
-    }
-
-    private int score(String chunk, String[] queryWords) {
-        int score = 0;
-        for (String word : queryWords) {
-            if (word.length() > 3 && chunk.contains(word)) {
-                score++;
-            }
+        System.out.println("[DocRetriever] Found " + relevant.size() + " relevant chunks for: \"" + userMessage + "\"");
+        for (int i = 0; i < relevant.size(); i++) {
+            // print just the first line of each chunk (usually the ## heading)
+            System.out.println("------------ Chunk " + (i + 1) + " ------------");
+            System.out.println(relevant.get(i));
         }
-        return score;
+
+        return String.join("\n\n---\n\n", relevant);
     }
 }

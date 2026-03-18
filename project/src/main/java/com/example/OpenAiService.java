@@ -3,6 +3,7 @@ package com.example;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -102,5 +103,37 @@ public class OpenAiService {
         }
         return array;
     }
-    
+
+
+    public List<Double> embed(String text) {
+        try {
+            String body = new JSONObject()
+                    .put("model", "text-embedding-3-small")
+                    .put("input", text)
+                    .toString();
+
+            Map<String, String> headers = Map.of(
+                    "Content-Type", "application/json",
+                    "Authorization", "Bearer " + apiKey
+            );
+
+            String rawResponse = httpClient.post("https://api.openai.com/v1/embeddings", body, headers);
+            JSONObject json = new JSONObject(rawResponse);
+
+            JSONArray embedding = json
+                    .getJSONArray("data")
+                    .getJSONObject(0)
+                    .getJSONArray("embedding");
+
+            List<Double> vector = new ArrayList<>();
+            for (int i = 0; i < embedding.length(); i++) {
+                vector.add(embedding.getDouble(i));
+            }
+            return vector;
+
+        } catch (Exception e) {
+            System.err.println("Embedding failed: " + e.getMessage());
+            return List.of();
+        }
+    }
 }

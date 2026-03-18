@@ -21,7 +21,8 @@ public class Main
         ToolExecutor toolExecutor = new ToolExecutor(customerData);
         ConversationHistory conversationHistory = new ConversationHistory();
         DocLoader docLoader = new DocLoader();
-        DocRetriever docRetriever = new DocRetriever(docLoader.getChunks());
+        //DocRetriever docRetriever = new DocRetriever(docLoader.getChunks(), openAiService);
+        DocRetriever docRetriever = new DocRetriever(docLoader.getRawDocuments(), openAiService);
 
         Agent orchestrator = new OrchestratorAgent(openAiService, conversationHistory);
         Agent billingAgent = new BillingAgent(openAiService, conversationHistory, toolExecutor);
@@ -52,10 +53,7 @@ public class Main
             System.out.println("Agent: " + response);
         }
 
-
-
-        
-        
+        scanner.close();
         
     }
 }

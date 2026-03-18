@@ -26,21 +26,17 @@ public class TechnicalAgent extends Agent{
 
     @Override
     public String chat(String userMessage) {
-
-        String relevantChunks = docRetriever.retrieveRelevant(userMessage);
-
-        String systemWithChunks = systemPrompt + "\n\nDocumentation:\n" + relevantChunks;
+        String relevantDocs = docRetriever.retrieveRelevant(userMessage);
+        String systemWithDocs = systemPrompt + "\n\nDocumentation:\n" + relevantDocs;
 
         history.addUser(userMessage);
 
         List<Message> messages = new ArrayList<>();
-        messages.add(new Message("system", systemWithChunks));
+        messages.add(new Message("system", systemWithDocs));
         messages.addAll(history.getMessages());
 
         String response = openAiService.chat(messages);
         history.addAssistant(response);
         return response;
-
-        
     }
 }
