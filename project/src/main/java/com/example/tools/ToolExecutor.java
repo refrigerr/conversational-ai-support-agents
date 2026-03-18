@@ -14,6 +14,9 @@ public class ToolExecutor {
 
     public ToolExecutor(CustomerData customerData){
         addTool(new GetPlanTool(customerData));
+        addTool(new AddBillingRecordTool(customerData));
+        addTool(new GetBillingHistoryTool(customerData));
+        addTool(new ExplainRefundPolicyTool(customerData));
     }
 
     private void addTool(Tool tool) {
