@@ -34,42 +34,47 @@ public class BillingAgent extends Agent{
 
         List<Message> messages = new ArrayList<>(buildMessages());
 
-        // first call — LLM decides whether to use a tool
-        String rawResponse = openAiService.chatWithTools(messages, toolsArray);
-        JSONObject response = new JSONObject(rawResponse);
+        while (true) {
+            String rawResponse = openAiService.chatWithTools(messages, toolsArray);
+            JSONObject response = new JSONObject(rawResponse);
 
-        if (response.has("error")) {
-            String errorMsg = response.getJSONObject("error").getString("message");
-            System.err.println("OpenAI API error: " + errorMsg);
-            return "I encountered an error processing your request. Please try again.";
+            if (response.has("error")) {
+                String errorMsg = response.getJSONObject("error").getString("message");
+                System.err.println("OpenAI API error: " + errorMsg);
+                return "I encountered an error processing your request. Please try again.";
+            }
+
+            JSONObject choice = response.getJSONArray("choices").getJSONObject(0);
+            JSONObject message = choice.getJSONObject("message");
+            String finishReason = choice.getString("finish_reason");
+
+            if (finishReason.equals("tool_calls")) {
+                JSONArray toolCalls = message.getJSONArray("tool_calls");
+
+                // add assistant message with tool_calls to working list
+                messages.add(new Message("assistant", toolCalls));
+
+                // execute every tool call in this response
+                for (int i = 0; i < toolCalls.length(); i++) {
+                    JSONObject toolCall = toolCalls.getJSONObject(i);
+                    String toolName = toolCall.getJSONObject("function").getString("name");
+                    JSONObject arguments = new JSONObject(toolCall.getJSONObject("function").getString("arguments"));
+                    String toolCallId = toolCall.getString("id");
+
+                    String toolResult = toolExecutor.execute(toolName, arguments);
+                    System.out.println("[Tool called: " + toolName + " → " + toolResult + "]");
+
+                    messages.add(new Message("tool", toolResult, toolCallId));
+                }
+                // loop continues — LLM processes tool results and decides next step
+
+            } else {
+                // finish_reason is "stop" — LLM is done
+                String finalResponse = message.getString("content");
+                history.addAssistant(finalResponse);
+                return finalResponse;
+            }
         }
-
-        JSONObject choice = response.getJSONArray("choices").getJSONObject(0);
-        JSONObject message = choice.getJSONObject("message");
-        String finishReason = choice.getString("finish_reason");
-
-        if (finishReason.equals("tool_calls")) {
-            JSONObject toolCall = message.getJSONArray("tool_calls").getJSONObject(0);
-            String toolName = toolCall.getJSONObject("function").getString("name");
-            JSONObject arguments = new JSONObject(toolCall.getJSONObject("function").getString("arguments"));
-            String toolCallId = toolCall.getString("id");
-
-            String toolResult = toolExecutor.execute(toolName, arguments);
-            System.out.println("[Tool called: " + toolName + "; " + toolResult + "]");
-
-            // second call — send tool result back to get final response
-            messages.add(new Message("assistant", message.getJSONArray("tool_calls")));
-            messages.add(new Message("tool", toolResult, toolCallId));
-               
-            String finalResponse = openAiService.chat(messages);
-            history.addAssistant(finalResponse);
-            return finalResponse;
-        }
-
-        // no tool call — plain response
-        String plainResponse = message.getString("content");
-        history.addAssistant(plainResponse);
-        return plainResponse;
     }
 
 
