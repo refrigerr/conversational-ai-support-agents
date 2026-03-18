@@ -23,12 +23,7 @@ public class OpenAiService {
 
     public String chat(List<Message> messages) {
         try {
-            JSONArray messagesArray = new JSONArray();
-            for (Message message : messages) {
-                messagesArray.put(new JSONObject()
-                        .put("role", message.getRole())
-                        .put("content", message.getContent()));
-            }
+            JSONArray messagesArray = buildMessagesArray(messages);
 
             String body = new JSONObject()
                     .put("model", "gpt-4o-mini")
@@ -57,6 +52,55 @@ public class OpenAiService {
             System.err.println("LLM call failed: " + e.getMessage());
             return "I'm sorry, I encountered an error. Please try again.";
         }
+    }
+
+    public String chatWithTools(List<Message> messages, JSONArray tools) {
+        try {
+            JSONArray messagesArray = buildMessagesArray(messages);
+
+            String body = new JSONObject()
+                    .put("model", "gpt-4o-mini")
+                    .put("messages", messagesArray)
+                    .put("tools", tools)
+                    .toString();
+
+            Map<String, String> headers = Map.of(
+                    "Content-Type", "application/json",
+                    "Authorization", "Bearer " + apiKey
+            );
+
+            return httpClient.post(API_URL, body, headers); // return raw response so BillingAgent can inspect tool_calls
+
+        } catch (Exception e) {
+            System.err.println("LLM call failed: " + e.getMessage());
+            return null;
+        }
+    }
+
+    // extract into shared helper so both chat() and chatWithTools() use it
+    private JSONArray buildMessagesArray(List<Message> messages) {
+        JSONArray array = new JSONArray();
+        for (Message message : messages) {
+            JSONObject obj = new JSONObject();
+            obj.put("role", message.getRole());
+
+            if (message.getContent() != null) {
+                obj.put("content", message.getContent());
+            } else {
+                obj.put("content", JSONObject.NULL);
+            }
+
+            if (message.getToolCalls() != null) {
+                obj.put("tool_calls", message.getToolCalls());
+            }
+
+            if (message.getToolCallId() != null) {
+                obj.put("tool_call_id", message.getToolCallId());
+            }
+
+            array.put(obj);
+        }
+        return array;
     }
     
 }
