@@ -59,10 +59,15 @@ List<String> documents = loader.loadFullDocuments(List.of(
 ));
 ```
 
-### 4. Build and run the project
+### 4. Build the project
 ```bash
-mvn compile exec:java
+mvn clean compile
+```
 
+### 5. Run the project
+```bash
+mvn exec:java
+```
 
 ## Usage
 
