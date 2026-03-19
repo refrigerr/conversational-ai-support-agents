@@ -1,0 +1,42 @@
+You: What is a customer_001 billing plan
+
+Billing Agent: The billing plan for customer_001 is the Pro plan, which costs $49 per month.
+
+You: and customer_003?
+
+Billing Agent: The billing plan for customer_003 is the Enterprise plan, which costs $199 per month.
+
+You: How do I use your API?
+
+Technical Agent: To use the API, follow these steps:
+
+1. **Base URL**: All API requests should be made to the base URL: `https://api.example.com/v1`. All requests must be made over HTTPS.
+
+2. **Authentication**: Include your API key in the Authorization header of every request. The header format should be: `Authorization: Bearer YOUR_API_KEY`. You can generate an API key in the Developer Portal under API Keys > Generate New Key. Keep your API key secret. If you believe your key has been compromised, revoke it immediately from the Developer Portal and generate a new one.
+
+3. **Making Your First Request**:
+   - To verify that your API key is working correctly, make a GET request to the health endpoint:
+     ```
+     GET https://api.example.com/v1/health
+     ```
+   - A successful response will return HTTP 200 with the body:
+     ```json
+     {"status": "ok", "version": "1.4.2"}
+     ```
+   - If you receive a 401 response, it means your API key is invalid or missing. If you receive a 503 response, it indicates the API is temporarily unavailable.
+
+These steps will help you start using the API effectively.
+
+You: What is your refund policy?
+
+Billing Agent: Our refund policy is as follows:
+
+- Refunds are available within 30 days of purchase.
+- Partial refunds are available for unused portions of annual plans.
+- Refunds are processed within 5-10 business days.
+- One-time setup fees are non-refundable.
+
+If you have any specific questions or need assistance with a refund request, feel free to ask!
+
+You: exit
+Goodbye!

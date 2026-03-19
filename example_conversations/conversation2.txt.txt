@@ -1,0 +1,64 @@
+Welcome, type 'exit' to quit app.
+
+You: I have hit rate limit, what to do?
+
+Technical Agent: If you have received a 429 Too Many Requests response, it means you have exceeded the rate limit, which is 100 requests per minute per API key. To handle this, you should implement exponential backoff in your integration. Additionally, you can check the response headers for details:
+
+- X-RateLimit-Limit: your limit
+- X-RateLimit-Remaining: requests remaining in the current window
+- X-RateLimit-Reset: Unix timestamp when the limit resets
+
+If you consistently need more than 100 requests per minute, you should contact support to request a rate limit increase.
+
+You: What is a history billing for customer_001
+
+Billing Agent: Here is the billing history for customer_001:
+
+- **2024-01-01:** Pro Plan - $49.00
+- **2024-02-01:** Pro Plan - $49.00
+- **2024-03-01:** Pro Plan - $49.00
+
+If you have any other questions or need further information, let me know!
+
+You: add to them a new billing for a tv, it cost 199 dollars and the purchase was made 2026.19.03
+
+Billing Agent: A new billing record for the TV purchase of $199 has been successfully added for customer_001 on 2026-03-19. If you need further assistance or have any other requests, feel free to ask!
+
+You: show me their billing history
+
+Billing Agent: Here is the updated billing history for customer_001:
+
+- **2024-01-01:** Pro Plan - $49.00
+- **2024-02-01:** Pro Plan - $49.00
+- **2024-03-01:** Pro Plan - $49.00
+- **2026-03-19:** TV Purchase - $199.00
+
+If you have any other questions or need further information, let me know!
+
+You: and how can i make api request?
+
+Technical Agent: To make an API request, follow these steps:
+
+1. **Base URL:** Use the base URL for all API requests: `https://api.example.com/v1`.
+
+2. **Authentication:** Include your API key in the Authorization header of every request. The format is:
+   ```
+   Authorization: Bearer YOUR_API_KEY
+   ```
+
+3. **Making a Request:** For example, to verify that your API key is working, make a GET request to the health endpoint:
+   ```
+   GET https://api.example.com/v1/health
+   ```
+
+   A successful response will return HTTP 200 with the body:
+   ```json
+   {"status": "ok", "version": "1.4.2"}
+   ```
+
+4. **HTTPS:** Ensure that all requests are made over HTTPS.
+
+Let me know if you have any other questions!
+
+You: exit
+Goodbye!
