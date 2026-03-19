@@ -71,7 +71,7 @@ mvn exec:java
 
 ## Usage
 
-Once the app starts, it will embed the documentation files (this takes a few seconds on first run) and then prompt you for input:
+Once the app starts, it will embed the documentation files (this takes a few seconds) and then prompt you for input:
 
 ```
 Welcome! Type 'exit' to quit.
